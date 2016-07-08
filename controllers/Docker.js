@@ -6,13 +6,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 const kwyjibo_1 = require("kwyjibo");
+const K = require("kwyjibo");
 const Dockerode = require("dockerode");
 const Parser = require("ansi-style-parser");
 const Stream = require("stream");
+const environmentAuth_1 = require("../middleware/environmentAuth");
 let Docker = class Docker {
     constructor() {
         this.dockerAPI = undefined;
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });
+    }
+    authGet(context) {
+        context.response.render('auth');
+    }
+    authPost(context) {
+        let password = context.request.body.password;
+        if (password != undefined) {
+            context.response.cookie("auth", password);
+        }
+        context.response.send("done!");
     }
     containers(context) {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
@@ -51,10 +63,19 @@ let Docker = class Docker {
     }
 };
 __decorate([
-    kwyjibo_1.DocAction(`Lists existing containers`)
+    kwyjibo_1.Get("/auth"),
+    kwyjibo_1.DocAction(`Add authentication cookie`)
+], Docker.prototype, "authGet", null);
+__decorate([
+    kwyjibo_1.Post("/auth")
+], Docker.prototype, "authPost", null);
+__decorate([
+    kwyjibo_1.DocAction(`Lists existing containers`),
+    K.ActionMiddleware(environmentAuth_1.default)
 ], Docker.prototype, "containers", null);
 __decorate([
-    kwyjibo_1.DocAction(`Shows the logs for the container with the id sent in the querystring`)
+    kwyjibo_1.DocAction(`Shows the logs for the container with the id sent in the querystring`),
+    K.ActionMiddleware(environmentAuth_1.default)
 ], Docker.prototype, "logs", null);
 Docker = __decorate([
     kwyjibo_1.Controller("/docker"),

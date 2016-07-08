@@ -4,6 +4,7 @@ import * as K from "kwyjibo";
 import * as Dockerode from "dockerode";
 import * as Parser from "ansi-style-parser";
 import * as Stream from "stream";
+import EnvironmentAuth from "../middleware/environmentAuth";
 
 @Controller("/docker")
 @DocController("Docker operations controller.")
@@ -14,7 +15,24 @@ class Docker {
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });
     }
 
+    @Get("/auth")
+    @DocAction(`Add authentication cookie`)
+    authGet(context: Context): void {
+        context.response.render('auth');
+    }
+
+    @Post("/auth")
+    authPost(context: Context): void {
+        let password = context.request.body.password;
+        if (password != undefined) {
+            context.response.cookie("auth", password);
+        }
+
+        context.response.send("done!");
+    }
+
     @DocAction(`Lists existing containers`)
+    @K.ActionMiddleware(EnvironmentAuth)
     containers(context: Context): void {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
             context.response.render("containersList", { model: containers });
@@ -22,6 +40,7 @@ class Docker {
     }
 
     @DocAction(`Shows the logs for the container with the id sent in the querystring`)
+    @K.ActionMiddleware(EnvironmentAuth)
     logs(context: Context): void {
 
         let id = context.request.query.id;
