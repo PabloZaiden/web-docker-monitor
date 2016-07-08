@@ -1,0 +1,36 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "serve-static/serve-static.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "mime/mime.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "express/express.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "express-serve-static-core/express-serve-static-core.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "body-parser/body-parser.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "node/node.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "cookie-parser/cookie-parser.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "debug/debug.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    },
+    "ejs/ejs.d.ts": {
+      "commit": "448b1ab712df827697d6e7a350bfb6737a00a463"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "web-docker-monitor",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "ansi-style-parser": "^1.0.1",
+    "body-parser": "^1.13.2",
+    "cookie-parser": "^1.3.5",
+    "debug": "^2.2.0",
+    "dockerode": "^2.2.10",
+    "ejs": "^2.4.2",
+    "express": "^4.13.1",
+    "kwyjibo": "^1.0.1",
+    "require-all": "^2.0.0"
+  }
+}

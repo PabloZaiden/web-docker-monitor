@@ -1,0 +1,17 @@
+<html>
+    <body>
+        <p>
+            Containers
+
+            <ul>
+                <%for (let container of model) { %>
+                    <li>
+                        <%=container.Image %> 
+                        (<%=container.Status%>)
+                        <a href="../logs?id=<%=container.Id%>">View logs</a>
+                    </li>
+                <%}%>
+            </ul>
+        </p>
+    </body>
+</html>
