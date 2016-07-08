@@ -15,6 +15,10 @@ class Docker {
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });
     }
 
+    private handleError(context: Context, error: any): void {
+        context.response.status(500).send(error);
+    }
+
     @Get("/auth")
     @DocAction(`Add authentication cookie`)
     authGet(context: Context): void {
@@ -28,14 +32,40 @@ class Docker {
             context.response.cookie("auth", password);
         }
 
-        context.response.send("done!");
+        context.response.redirect("/docker/containers");
     }
 
     @DocAction(`Lists existing containers`)
     @K.ActionMiddleware(EnvironmentAuth)
     containers(context: Context): void {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
             context.response.render("containersList", { model: containers });
+        });
+    }
+
+    @DocAction(`Starts a container`)
+    @K.ActionMiddleware(EnvironmentAuth)
+    start(context: Context): void {
+                let id = context.request.query.id;
+        if (id == undefined) {
+            context.response.status(404).send("invalid id");
+            return;
+        }
+
+        let container = this.dockerAPI.getContainer(id);
+
+
+        container.start((err, stream) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
+
+            context.response.redirect("/docker/containers");
         });
     }
 
@@ -58,6 +88,11 @@ class Docker {
             stderr: true,
             tty: false
         }, (err, stream) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
+
             var data = "";
 
             var logStream = new Stream.PassThrough();
@@ -73,7 +108,7 @@ class Docker {
                 for (let p of parts) {
                     html += p.text;
                 }
-                context.response.send("<pre>" + html + "</pre>");
+                context.response.send("<html><body><pre>" + html + "</pre></body></html>");
             });
 
             this.dockerAPI.modem.demuxStream(stream, logStream, logStream);

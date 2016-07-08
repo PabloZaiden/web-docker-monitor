@@ -1,5 +1,5 @@
 <html>
-    <body>
+    <body style="font-family: monospace">
         <p>
             Containers
 
@@ -8,7 +8,10 @@
                     <li>
                         <%=container.Image %> 
                         (<%=container.Status%>)
-                        <a href="../logs?id=<%=container.Id%>">View logs</a>
+                        <a href="/docker/logs?id=<%=container.Id%>">View logs</a>
+                        <%if (container.State !== "running") { %>
+                            <a href="/docker/start?id=<%=container.Id%>">Start</a>
+                        <%}%>
                     </li>
                 <%}%>
             </ul>
