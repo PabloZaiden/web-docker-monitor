@@ -126,7 +126,7 @@ let Docker = class Docker {
                 this.handleError(context, err);
                 return;
             }
-            let fileName = path.replace("/", "__");
+            let fileName = path.split("/").join("__");
             context.response.setHeader("Content-Type", "application/octet-stream");
             context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}.tar"`);
             stream.pipe(context.response);
