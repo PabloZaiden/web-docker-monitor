@@ -10,6 +10,7 @@ const K = require("kwyjibo");
 const Dockerode = require("dockerode");
 const Parser = require("ansi-style-parser");
 const Stream = require("stream");
+const OS = require("os");
 const environmentAuth_1 = require("../middleware/environmentAuth");
 let Docker = class Docker {
     constructor() {
@@ -53,6 +54,84 @@ let Docker = class Docker {
             context.response.redirect("/docker/containers");
         });
     }
+    ls(context) {
+        let id = context.request.query.id;
+        let path = context.request.query.path;
+        if (id == undefined || path == undefined) {
+            context.response.status(404).send("invalid id or path");
+            return;
+        }
+        let container = this.dockerAPI.getContainer(id);
+        container.exec({
+            AttachStdout: true,
+            AttachStderr: true,
+            Tty: false,
+            Cmd: ["ls", "-lap", path]
+        }, (err, exec) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
+            exec.start((err, stream) => {
+                if (err) {
+                    this.handleError(context, err);
+                    return;
+                }
+                this.readStream(stream, content => {
+                    let model = {
+                        path: path,
+                        id: id,
+                        entries: []
+                    };
+                    let lines = content.split(OS.EOL);
+                    for (let line of lines) {
+                        if (!line.startsWith("total")) {
+                            let lastSpace = line.lastIndexOf(" ");
+                            let info = line.substring(0, lastSpace);
+                            let entryName = line.substring(lastSpace + 1);
+                            let action = "";
+                            let newPath = path + entryName;
+                            if (entryName.endsWith("/")) {
+                                action = "ls";
+                            }
+                            else {
+                                action = "getArchive";
+                            }
+                            let link = `/docker/${action}?id=${id}&path=${path + entryName}`;
+                            let entry = {
+                                info: info,
+                                name: entryName,
+                                link: link
+                            };
+                            model.entries.push(entry);
+                        }
+                    }
+                    context.response.render("fsList", model);
+                });
+            });
+        });
+    }
+    getArchive(context) {
+        let id = context.request.query.id;
+        let path = context.request.query.path;
+        if (id == undefined || path == undefined) {
+            context.response.status(404).send("invalid id or path");
+            return;
+        }
+        let container = this.dockerAPI.getContainer(id);
+        container.getArchive({
+            path: path
+        }, (err, stream) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
+            let fileName = path.replace("/", "__");
+            context.response.setHeader("Content-Type", "application/octet-stream");
+            context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}.tar"`);
+            stream.pipe(context.response);
+        });
+    }
     logs(context) {
         let id = context.request.query.id;
         if (id == undefined) {
@@ -70,13 +149,7 @@ let Docker = class Docker {
                 this.handleError(context, err);
                 return;
             }
-            var data = "";
-            var logStream = new Stream.PassThrough();
-            logStream.on("data", chunk => {
-                data += chunk;
-            });
-            stream.on("end", () => {
-                stream.destroy();
+            this.readStream(stream, data => {
                 let parts = Parser(data);
                 let html = "";
                 for (let p of parts) {
@@ -84,8 +157,19 @@ let Docker = class Docker {
                 }
                 context.response.send("<html><body><pre>" + html + "</pre></body></html>");
             });
-            this.dockerAPI.modem.demuxStream(stream, logStream, logStream);
         });
+    }
+    readStream(stream, callback) {
+        var data = "";
+        var finalStream = new Stream.PassThrough();
+        finalStream.on("data", chunk => {
+            data += chunk;
+        });
+        stream.on("end", () => {
+            stream.destroy();
+            callback(data);
+        });
+        this.dockerAPI.modem.demuxStream(stream, finalStream, finalStream);
     }
 };
 __decorate([
@@ -103,6 +187,14 @@ __decorate([
     kwyjibo_1.DocAction(`Starts a container`),
     K.ActionMiddleware(environmentAuth_1.default)
 ], Docker.prototype, "start", null);
+__decorate([
+    kwyjibo_1.DocAction(`Lists the content of a directory from a container`),
+    K.ActionMiddleware(environmentAuth_1.default)
+], Docker.prototype, "ls", null);
+__decorate([
+    kwyjibo_1.DocAction(`Gets the content of a file from a container`),
+    K.ActionMiddleware(environmentAuth_1.default)
+], Docker.prototype, "getArchive", null);
 __decorate([
     kwyjibo_1.DocAction(`Shows the logs for the container with the id sent in the querystring`),
     K.ActionMiddleware(environmentAuth_1.default)

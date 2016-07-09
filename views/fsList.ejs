@@ -1,0 +1,13 @@
+<html>
+    <body style="font-family: monospace">
+        <p>
+            <h1>Content of directory: <%=path%> (<a href="/docker/getArchive/?id=<%=id%>&path=<%=path%>">download</a>)</h1>
+            <pre>
+<%for (let entry of entries) 
+{ 
+%><%=entry.info%> <a href="<%=entry.link%>"><%=entry.name%></a>
+<%}%>
+            </pre>
+        </p>
+    </body>
+</html>
