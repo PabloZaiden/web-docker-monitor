@@ -21,6 +21,12 @@ class Docker {
         context.response.status(500).send(error);
     }
 
+    @Get("/")
+    @DocAction("Redirects to /docker/containers")
+    index(context: Context) {
+        context.response.redirect("/docker/containers");
+    }
+
     @Get("/auth")
     @DocAction(`Add authentication cookie`)
     authGet(context: Context): void {

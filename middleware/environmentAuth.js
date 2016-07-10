@@ -8,7 +8,12 @@ function EnvironmentAuth(request, response, next) {
         next();
     }
     else {
-        response.status(401).send("Unauthorized!");
+        if (process.env.AUTH_PATH != undefined) {
+            response.redirect(process.env.AUTH_PATH);
+        }
+        else {
+            response.status(401).send("Unauthorized!");
+        }
     }
     return;
 }

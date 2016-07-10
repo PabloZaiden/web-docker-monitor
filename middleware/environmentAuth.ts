@@ -7,7 +7,11 @@ export default function EnvironmentAuth(request: Express.Request, response: Expr
     } else if (process.env.AUTH_PASSWORD === request.cookies.auth) {
         next();
     } else {
-        response.status(401).send("Unauthorized!");
+        if (process.env.AUTH_PATH != undefined) {
+            response.redirect(process.env.AUTH_PATH);
+        } else {
+            response.status(401).send("Unauthorized!");
+        }
     }
 
     return;

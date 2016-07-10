@@ -20,6 +20,9 @@ let Docker = class Docker {
     handleError(context, error) {
         context.response.status(500).send(error);
     }
+    index(context) {
+        context.response.redirect("/docker/containers");
+    }
     authGet(context) {
         context.response.render('auth');
     }
@@ -173,6 +176,10 @@ let Docker = class Docker {
     }
 };
 __decorate([
+    kwyjibo_1.Get("/"),
+    kwyjibo_1.DocAction("Redirects to /docker/containers")
+], Docker.prototype, "index", null);
+__decorate([
     kwyjibo_1.Get("/auth"),
     kwyjibo_1.DocAction(`Add authentication cookie`)
 ], Docker.prototype, "authGet", null);
@@ -203,4 +210,4 @@ Docker = __decorate([
     kwyjibo_1.Controller("/docker"),
     kwyjibo_1.DocController("Docker operations controller.")
 ], Docker);
-//# sourceMappingURL=Docker.js.map
+//# sourceMappingURL=docker.js.map
