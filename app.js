@@ -3,25 +3,45 @@ const Express = require("express");
 const CookieParser = require("cookie-parser");
 const BodyParser = require("body-parser");
 const Http = require("http");
+const Passport = require("passport");
+const Session = require("express-session");
+const slackSecurityProvider_1 = require("./middleware/slackSecurityProvider");
 const kwyjibo_1 = require("kwyjibo");
-// HACK: this must be done. Otherwise kwyjibo wont find the controllers
-/* tslint:disable */
-let controllers = require("require-all")({
-    dirname: __dirname + "/controllers",
-    excludeDirs: /^\.(git|svn)$/,
-    recursive: true
-});
-/* tslint:enable */
 class App {
-    static start() {
-        App.express = Express();
+    static get authorizeMiddleware() {
+        return App.securityProvider.getAuthorizeMiddleware();
+    }
+    static get authenticateMiddleware() {
+        return App.securityProvider.getAuthenticateMiddleware();
+    }
+    static init() {
         if (process.env.NODE_ENV === "development") {
             App.isDevelopment = true;
         }
+        App.express = Express();
         App.express.use(BodyParser.json());
         App.express.use(BodyParser.urlencoded({ extended: false }));
         App.express.use(CookieParser());
+        App.express.use(Session({
+            secret: process.env.SESSION_SECRET || "banana joe",
+            resave: false,
+            saveUninitialized: true
+        }));
+        App.express.use(Passport.initialize());
+        App.express.use(Passport.session());
+        Passport.serializeUser(function (user, done) {
+            done(null, user);
+        });
+        Passport.deserializeUser(function (user, done) {
+            done(null, user);
+        });
         App.express.set('view engine', 'ejs');
+        App.loadSecurityProvider(new slackSecurityProvider_1.default());
+    }
+    static loadSecurityProvider(securityProvider) {
+        App.securityProvider = securityProvider;
+    }
+    static start() {
         // Create HTTP server.
         App.server = Http.createServer(App.express);
         // Init all Kwyjibo controllers
@@ -102,5 +122,16 @@ class App {
 }
 App.port = App.normalizePort(process.env.port || "3000");
 App.isDevelopment = false;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = App;
+App.init();
+// HACK: this must be done. Otherwise kwyjibo wont find the controllers
+/* tslint:disable */
+let controllers = require("require-all")({
+    dirname: __dirname + "/controllers",
+    excludeDirs: /^\.(git|svn)$/,
+    recursive: true
+});
+/* tslint:enable */
 App.start();
 //# sourceMappingURL=app.js.map

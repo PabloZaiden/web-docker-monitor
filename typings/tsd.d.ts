@@ -7,3 +7,5 @@
 /// <reference path="cookie-parser/cookie-parser.d.ts" />
 /// <reference path="debug/debug.d.ts" />
 /// <reference path="ejs/ejs.d.ts" />
+/// <reference path="passport/passport.d.ts" />
+/// <reference path="express-session/express-session.d.ts" />

@@ -14,6 +14,9 @@
     "ejs": "^2.4.2",
     "express": "^4.13.1",
     "kwyjibo": "^1.0.1",
-    "require-all": "^2.0.0"
+    "require-all": "^2.0.0",
+    "passport": "^0.3.2",
+    "passport-slack": "^0.0.6",
+    "express-session": "^1.14.0"
   }
 }

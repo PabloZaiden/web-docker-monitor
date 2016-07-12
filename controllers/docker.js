@@ -9,9 +9,9 @@ const kwyjibo_1 = require("kwyjibo");
 const K = require("kwyjibo");
 const Dockerode = require("dockerode");
 const Parser = require("ansi-style-parser");
+const app_1 = require("../app");
 const Stream = require("stream");
 const OS = require("os");
-const environmentAuth_1 = require("../middleware/environmentAuth");
 let Docker = class Docker {
     constructor() {
         this.dockerAPI = undefined;
@@ -25,6 +25,9 @@ let Docker = class Docker {
     }
     authGet(context) {
         context.response.render('auth');
+    }
+    oauth(context) {
+        context.response.redirect("/");
     }
     authPost(context) {
         let password = context.request.body.password;
@@ -184,27 +187,32 @@ __decorate([
     kwyjibo_1.DocAction(`Add authentication cookie`)
 ], Docker.prototype, "authGet", null);
 __decorate([
+    kwyjibo_1.Get("/oauth"),
+    K.ActionMiddleware(app_1.default.authenticateMiddleware),
+    kwyjibo_1.DocAction(`oAuth callback`)
+], Docker.prototype, "oauth", null);
+__decorate([
     kwyjibo_1.Post("/auth")
 ], Docker.prototype, "authPost", null);
 __decorate([
-    kwyjibo_1.DocAction(`Lists existing containers`),
-    K.ActionMiddleware(environmentAuth_1.default)
+    K.ActionMiddleware(app_1.default.authorizeMiddleware),
+    kwyjibo_1.DocAction(`Lists existing containers`)
 ], Docker.prototype, "containers", null);
 __decorate([
     kwyjibo_1.DocAction(`Starts a container`),
-    K.ActionMiddleware(environmentAuth_1.default)
+    K.ActionMiddleware(app_1.default.authorizeMiddleware)
 ], Docker.prototype, "start", null);
 __decorate([
     kwyjibo_1.DocAction(`Lists the content of a directory from a container`),
-    K.ActionMiddleware(environmentAuth_1.default)
+    K.ActionMiddleware(app_1.default.authorizeMiddleware)
 ], Docker.prototype, "ls", null);
 __decorate([
     kwyjibo_1.DocAction(`Gets the content of a file from a container`),
-    K.ActionMiddleware(environmentAuth_1.default)
+    K.ActionMiddleware(app_1.default.authorizeMiddleware)
 ], Docker.prototype, "getArchive", null);
 __decorate([
     kwyjibo_1.DocAction(`Shows the logs for the container with the id sent in the querystring`),
-    K.ActionMiddleware(environmentAuth_1.default)
+    K.ActionMiddleware(app_1.default.authorizeMiddleware)
 ], Docker.prototype, "logs", null);
 Docker = __decorate([
     kwyjibo_1.Controller("/docker"),

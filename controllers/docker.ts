@@ -1,12 +1,10 @@
-import * as Express from "express";
-import {Controller, DocController, DocAction, Get, Post, ExpressCompatible, Context} from "kwyjibo";
+import {Controller, DocController, DocAction, Get, Post, Context} from "kwyjibo";
 import * as K from "kwyjibo";
 import * as Dockerode from "dockerode";
 import * as Parser from "ansi-style-parser";
+import App from "../app";
 import * as Stream from "stream";
 import * as OS from "os";
-
-import EnvironmentAuth from "../middleware/environmentAuth";
 
 @Controller("/docker")
 @DocController("Docker operations controller.")
@@ -33,6 +31,13 @@ class Docker {
         context.response.render('auth');
     }
 
+    @Get("/oauth")
+    @K.ActionMiddleware(App.authenticateMiddleware)
+    @DocAction(`oAuth callback`)
+    oauth(context: Context): void {
+        context.response.redirect("/");
+    }
+
     @Post("/auth")
     authPost(context: Context): void {
         let password = context.request.body.password;
@@ -43,8 +48,8 @@ class Docker {
         context.response.redirect("/docker/containers");
     }
 
+    @K.ActionMiddleware(App.authorizeMiddleware)
     @DocAction(`Lists existing containers`)
-    @K.ActionMiddleware(EnvironmentAuth)
     containers(context: Context): void {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
             if (err) {
@@ -56,7 +61,7 @@ class Docker {
     }
 
     @DocAction(`Starts a container`)
-    @K.ActionMiddleware(EnvironmentAuth)
+    @K.ActionMiddleware(App.authorizeMiddleware)
     start(context: Context): void {
         let id = context.request.query.id;
         if (id == undefined) {
@@ -77,7 +82,7 @@ class Docker {
     }
 
     @DocAction(`Lists the content of a directory from a container`)
-    @K.ActionMiddleware(EnvironmentAuth)
+    @K.ActionMiddleware(App.authorizeMiddleware)
     ls(context: Context) {
         let id = context.request.query.id;
         let path = context.request.query.path;
@@ -149,7 +154,7 @@ class Docker {
     }
 
     @DocAction(`Gets the content of a file from a container`)
-    @K.ActionMiddleware(EnvironmentAuth)
+    @K.ActionMiddleware(App.authorizeMiddleware)
     getArchive(context: Context) {
         let id: string = context.request.query.id;
         let path: string = context.request.query.path;
@@ -168,7 +173,7 @@ class Docker {
                 this.handleError(context, err);
                 return;
             }
-            
+
             let fileName = path.split("/").join("__");
 
             context.response.setHeader("Content-Type", "application/octet-stream");
@@ -178,7 +183,7 @@ class Docker {
     }
 
     @DocAction(`Shows the logs for the container with the id sent in the querystring`)
-    @K.ActionMiddleware(EnvironmentAuth)
+    @K.ActionMiddleware(App.authorizeMiddleware)
     logs(context: Context): void {
 
         let id = context.request.query.id;

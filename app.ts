@@ -4,38 +4,66 @@ import * as BodyParser from "body-parser";
 import * as DebugModule from "debug";
 import * as Http from "http";
 import * as EJS from "ejs";
+import * as Passport from "passport";
+import * as Session from "express-session";
+import SlackSecurityProvider from "./middleware/slackSecurityProvider";
+import {SecurityProvider} from "./middleware/securityProvider";
+import EnvironmentAuth from "./middleware/environmentAuth";
 import {addControllersToExpressApp} from "kwyjibo";
 
-// HACK: this must be done. Otherwise kwyjibo wont find the controllers
-/* tslint:disable */
-let controllers = require("require-all")({
-    dirname: __dirname + "/controllers",
-    excludeDirs: /^\.(git|svn)$/,
-    recursive: true
-});
-/* tslint:enable */
-
-class App {
+export default class App {
 
     private static port: number = App.normalizePort(process.env.port || "3000");
     private static server: Http.Server;
     private static express: Express.Express;
     private static isDevelopment = false;
+    private static securityProvider: SecurityProvider;
+   
+    public static get authorizeMiddleware(): Express.Handler {
+        return App.securityProvider.getAuthorizeMiddleware();
+    }
 
-    public static start(): void {
+    public static get authenticateMiddleware(): Express.Handler {
+        return App.securityProvider.getAuthenticateMiddleware()
+    }
 
-        App.express = Express();
-
+    public static init(): void {
         if (process.env.NODE_ENV === "development") {
             App.isDevelopment = true;
         }
 
+        App.express = Express();
+
         App.express.use(BodyParser.json());
         App.express.use(BodyParser.urlencoded({ extended: false }));
         App.express.use(CookieParser());
+        App.express.use(Session({
+            secret: process.env.SESSION_SECRET || "banana joe",
+            resave: false,
+            saveUninitialized: true
+        }));
+        App.express.use(Passport.initialize());
+        App.express.use(Passport.session());
+
+        Passport.serializeUser(function (user, done) {
+            done(null, user);
+        });
+
+        Passport.deserializeUser(function (user, done) {
+            done(null, user);
+        });
+
         App.express.set('view engine', 'ejs');
 
+        App.loadSecurityProvider(new SlackSecurityProvider());
+    }
 
+
+    private static loadSecurityProvider(securityProvider) {
+        App.securityProvider = securityProvider;
+    }
+
+    public static start(): void {
         // Create HTTP server.
         App.server = Http.createServer(App.express);
 
@@ -126,5 +154,16 @@ class App {
         }
     }
 }
+
+App.init();
+
+// HACK: this must be done. Otherwise kwyjibo wont find the controllers
+/* tslint:disable */
+let controllers = require("require-all")({
+    dirname: __dirname + "/controllers",
+    excludeDirs: /^\.(git|svn)$/,
+    recursive: true
+});
+/* tslint:enable */
 
 App.start();
