@@ -12,6 +12,11 @@ export default class SlackSecurityProvider implements SecurityProvider {
         let slackClientId = process.env.SLACK_CLIENT_ID;
         let slackClientSecret = process.env.SLACK_CLIENT_SECRET;
         let slackTeamUrl = process.env.SLACK_TEAM_URL;
+        let slackCallbackUrl = process.env.SLACK_CALLBACK_URL;
+
+        if (!slackCallbackUrl) {
+            throw new Error("Missing SLACK_CALLBACK_URL");
+        }
 
         if (!slackClientId) {
             throw new Error("Missing SLACK_CLIENT_ID");
@@ -29,6 +34,7 @@ export default class SlackSecurityProvider implements SecurityProvider {
             clientID: slackClientId,
             clientSecret: slackClientSecret,
             scope: "users:read",
+            callbackURL: slackCallbackUrl
         },
             function (accessToken, refreshToken, profile, done) {
                 if (profile._json.url === slackTeamUrl) {
