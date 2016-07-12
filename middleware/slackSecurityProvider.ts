@@ -39,7 +39,7 @@ export default class SlackSecurityProvider implements SecurityProvider {
             }
         ));
 
-        this.authenticateMiddleware = Passport.authenticate("slack", { session: false });
+        this.authenticateMiddleware = Passport.authenticate("slack");
 
         this.authorizeMiddleware = (req, res, next) => {
             if (!req.isAuthenticated()) {

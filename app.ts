@@ -37,8 +37,14 @@ export default class App {
         App.express.use(BodyParser.json());
         App.express.use(BodyParser.urlencoded({ extended: false }));
         App.express.use(CookieParser());
+
+        let sessionSecret = process.env.SESSION_SECRET;
+        if (!sessionSecret) {
+            throw new Error("Missing SESSION_SECRET");
+        }
+        
         App.express.use(Session({
-            secret: process.env.SESSION_SECRET || "banana joe",
+            secret: sessionSecret,
             resave: false,
             saveUninitialized: true
         }));
