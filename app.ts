@@ -8,7 +8,6 @@ import * as Passport from "passport";
 import * as Session from "express-session";
 import SlackSecurityProvider from "./middleware/slackSecurityProvider";
 import {SecurityProvider} from "./middleware/securityProvider";
-import EnvironmentAuth from "./middleware/environmentAuth";
 import {addControllersToExpressApp} from "kwyjibo";
 
 export default class App {
