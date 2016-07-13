@@ -6,7 +6,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 const kwyjibo_1 = require("kwyjibo");
-const app_1 = require("../app");
 let Root = class Root {
     oauth(context) {
         context.response.redirect("/docker");
@@ -14,8 +13,7 @@ let Root = class Root {
 };
 __decorate([
     kwyjibo_1.Get("/"),
-    kwyjibo_1.ActionMiddleware(app_1.default.authenticateMiddleware),
-    kwyjibo_1.DocAction(`oAuth callback`)
+    kwyjibo_1.DocAction(`Redirect to docker controller`)
 ], Root.prototype, "oauth", null);
 Root = __decorate([
     kwyjibo_1.Controller("/"),

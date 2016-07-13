@@ -6,8 +6,7 @@ import App from "../app";
 class Root {
    
     @Get("/")
-    @ActionMiddleware(App.authenticateMiddleware)
-    @DocAction(`oAuth callback`)
+    @DocAction(`Redirect to docker controller`)
     oauth(context: Context): void {
         context.response.redirect("/docker");
     }
