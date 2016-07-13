@@ -13,7 +13,7 @@
     "dockerode": "^2.2.10",
     "ejs": "^2.4.2",
     "express": "^4.13.1",
-    "kwyjibo": "^1.0.1",
+    "kwyjibo": "^1.0.4",
     "require-all": "^2.0.0",
     "passport": "^0.3.2",
     "passport-slack": "^0.0.6",
