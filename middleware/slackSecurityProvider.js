@@ -2,7 +2,7 @@
 const Passport = require("passport");
 const Slack = require("passport-slack");
 class SlackSecurityProvider {
-    constructor() {
+    constructor(authenticateUrl) {
         let slackClientId = process.env.SLACK_CLIENT_ID;
         let slackClientSecret = process.env.SLACK_CLIENT_SECRET;
         let slackTeamUrl = process.env.SLACK_TEAM_URL;
@@ -35,7 +35,7 @@ class SlackSecurityProvider {
         this.authenticateMiddleware = Passport.authenticate("slack");
         this.authorizeMiddleware = (req, res, next) => {
             if (!req.isAuthenticated()) {
-                res.redirect("/oauth/callback");
+                res.redirect(authenticateUrl);
             }
             else {
                 next();

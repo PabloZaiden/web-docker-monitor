@@ -8,7 +8,7 @@ export default class SlackSecurityProvider implements SecurityProvider {
     private authenticateMiddleware: Express.Handler;
     private authorizeMiddleware: Express.Handler;
 
-    constructor() {
+    constructor(authenticateUrl: string) {
         let slackClientId = process.env.SLACK_CLIENT_ID;
         let slackClientSecret = process.env.SLACK_CLIENT_SECRET;
         let slackTeamUrl = process.env.SLACK_TEAM_URL;
@@ -49,7 +49,7 @@ export default class SlackSecurityProvider implements SecurityProvider {
 
         this.authorizeMiddleware = (req, res, next) => {
             if (!req.isAuthenticated()) {
-                res.redirect("/oauth/callback");
+                res.redirect(authenticateUrl);
             } else {
                 next();
             }

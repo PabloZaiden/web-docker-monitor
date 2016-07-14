@@ -8,11 +8,11 @@
                     <li>
                         <%=container.Image %> 
                         (<%=container.Status%>)
-                        <a href="/docker/logs?id=<%=container.Id%>">View logs</a>
+                        <a href="<%=paths.logs%>?id=<%=container.Id%>">View logs</a>
                         <%if (container.State !== "running") { %>
-                            <a href="/docker/start?id=<%=container.Id%>">Start</a>
+                            <a href="<%=paths.start%>?id=<%=container.Id%>">Start</a>
                         <%} else {%>
-                            <a href="/docker/ls?id=<%=container.Id%>&path=/">Browse filesystem</a>
+                            <a href="<%=paths.ls%>?id=<%=container.Id%>&path=/">Browse filesystem</a>
                         <%}%>
                     </li>
                 <%}%>

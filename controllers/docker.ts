@@ -20,35 +20,12 @@ class Docker {
     }
 
     @Get("/")
-    @DocAction("Redirects to /docker/containers")
+    @DocAction("Redirects to the containers action")
     index(context: Context) {
-        context.response.redirect("/docker/containers");
+        context.response.redirect(K.getActionRoute(Docker, "containers"));
     }
 
-    @Get("/auth")
-    @DocAction(`Add authentication cookie`)
-    authGet(context: Context): void {
-        context.response.render('auth');
-    }
-
-    @Get("/oauth")
-    @K.ActionMiddleware(App.authenticateMiddleware)
-    @DocAction(`oAuth callback`)
-    oauth(context: Context): void {
-        context.response.redirect("/");
-    }
-
-    @Post("/auth")
-    authPost(context: Context): void {
-        let password = context.request.body.password;
-        if (password != undefined) {
-            context.response.cookie("auth", password);
-        }
-
-        context.response.redirect("/docker/containers");
-    }
-
-    @K.ActionMiddleware(App.authorizeMiddleware)
+    @K.ActionMiddleware(App.authorize)
     @DocAction(`Lists existing containers`)
     containers(context: Context): void {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
@@ -56,12 +33,20 @@ class Docker {
                 this.handleError(context, err);
                 return;
             }
-            context.response.render("containersList", { model: containers });
+            context.response.render("containersList",
+                { 
+                    model: containers,
+                    paths: {
+                        logs: K.getActionRoute(Docker, "logs"),
+                        start: K.getActionRoute(Docker, "start"),
+                        ls: K.getActionRoute(Docker, "ls")
+                    }
+                });
         });
     }
 
     @DocAction(`Starts a container`)
-    @K.ActionMiddleware(App.authorizeMiddleware)
+    @K.ActionMiddleware(App.authorize)
     start(context: Context): void {
         let id = context.request.query.id;
         if (id == undefined) {
@@ -77,12 +62,12 @@ class Docker {
                 return;
             }
 
-            context.response.redirect("/docker/containers");
+            context.response.redirect(K.getActionRoute(Docker, "containers"));
         });
     }
 
     @DocAction(`Lists the content of a directory from a container`)
-    @K.ActionMiddleware(App.authorizeMiddleware)
+    @K.ActionMiddleware(App.authorize)
     ls(context: Context) {
         let id = context.request.query.id;
         let path = context.request.query.path;
@@ -115,7 +100,8 @@ class Docker {
                     let model = {
                         path: path,
                         id: id,
-                        entries: []
+                        entries: [],
+                        downloadDirPath: `${K.getActionRoute(Docker, "getArchive")}?id=${id}&path=${path}`
                     };
 
                     let lines = content.split(OS.EOL);
@@ -129,12 +115,12 @@ class Docker {
                             let newPath = path + entryName;
 
                             if (entryName.endsWith("/")) {
-                                action = "ls";
+                                action = K.getActionRoute(Docker, "ls");
                             } else {
-                                action = "getArchive";
+                                action = K.getActionRoute(Docker, "getArchive");
                             }
 
-                            let link = `/docker/${action}?id=${id}&path=${path + entryName}`;
+                            let link = `${action}?id=${id}&path=${path + entryName}`;
 
                             let entry = {
                                 info: info,
@@ -154,7 +140,7 @@ class Docker {
     }
 
     @DocAction(`Gets the content of a file from a container`)
-    @K.ActionMiddleware(App.authorizeMiddleware)
+    @K.ActionMiddleware(App.authorize)
     getArchive(context: Context) {
         let id: string = context.request.query.id;
         let path: string = context.request.query.path;
@@ -183,7 +169,7 @@ class Docker {
     }
 
     @DocAction(`Shows the logs for the container with the id sent in the querystring`)
-    @K.ActionMiddleware(App.authorizeMiddleware)
+    @K.ActionMiddleware(App.authorize)
     logs(context: Context): void {
 
         let id = context.request.query.id;

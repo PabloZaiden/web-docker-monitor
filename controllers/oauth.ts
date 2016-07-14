@@ -6,7 +6,7 @@ import App from "../app";
 class OAuth {
    
     @Get("/callback")
-    @ActionMiddleware(App.authenticateMiddleware)
+    @ActionMiddleware(App.authenticate)
     @DocAction(`oAuth callback`)
     oauth(context: Context): void {
         context.response.redirect("/");

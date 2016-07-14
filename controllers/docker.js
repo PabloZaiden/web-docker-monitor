@@ -12,7 +12,8 @@ const Parser = require("ansi-style-parser");
 const app_1 = require("../app");
 const Stream = require("stream");
 const OS = require("os");
-let Docker = class Docker {
+let Docker_1;
+let Docker = Docker_1 = class Docker {
     constructor() {
         this.dockerAPI = undefined;
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });
@@ -21,20 +22,7 @@ let Docker = class Docker {
         context.response.status(500).send(error);
     }
     index(context) {
-        context.response.redirect("/docker/containers");
-    }
-    authGet(context) {
-        context.response.render('auth');
-    }
-    oauth(context) {
-        context.response.redirect("/");
-    }
-    authPost(context) {
-        let password = context.request.body.password;
-        if (password != undefined) {
-            context.response.cookie("auth", password);
-        }
-        context.response.redirect("/docker/containers");
+        context.response.redirect(K.getActionRoute(Docker_1, "containers"));
     }
     containers(context) {
         this.dockerAPI.listContainers({ all: true }, (err, containers) => {
@@ -42,7 +30,14 @@ let Docker = class Docker {
                 this.handleError(context, err);
                 return;
             }
-            context.response.render("containersList", { model: containers });
+            context.response.render("containersList", {
+                model: containers,
+                paths: {
+                    logs: K.getActionRoute(Docker_1, "logs"),
+                    start: K.getActionRoute(Docker_1, "start"),
+                    ls: K.getActionRoute(Docker_1, "ls")
+                }
+            });
         });
     }
     start(context) {
@@ -57,7 +52,7 @@ let Docker = class Docker {
                 this.handleError(context, err);
                 return;
             }
-            context.response.redirect("/docker/containers");
+            context.response.redirect(K.getActionRoute(Docker_1, "containers"));
         });
     }
     ls(context) {
@@ -87,7 +82,8 @@ let Docker = class Docker {
                     let model = {
                         path: path,
                         id: id,
-                        entries: []
+                        entries: [],
+                        downloadDirPath: `${K.getActionRoute(Docker_1, "getArchive")}?id=${id}&path=${path}`
                     };
                     let lines = content.split(OS.EOL);
                     for (let line of lines) {
@@ -98,12 +94,12 @@ let Docker = class Docker {
                             let action = "";
                             let newPath = path + entryName;
                             if (entryName.endsWith("/")) {
-                                action = "ls";
+                                action = K.getActionRoute(Docker_1, "ls");
                             }
                             else {
-                                action = "getArchive";
+                                action = K.getActionRoute(Docker_1, "getArchive");
                             }
-                            let link = `/docker/${action}?id=${id}&path=${path + entryName}`;
+                            let link = `${action}?id=${id}&path=${path + entryName}`;
                             let entry = {
                                 info: info,
                                 name: entryName,
@@ -180,41 +176,29 @@ let Docker = class Docker {
 };
 __decorate([
     kwyjibo_1.Get("/"),
-    kwyjibo_1.DocAction("Redirects to /docker/containers")
+    kwyjibo_1.DocAction("Redirects to the containers action")
 ], Docker.prototype, "index", null);
 __decorate([
-    kwyjibo_1.Get("/auth"),
-    kwyjibo_1.DocAction(`Add authentication cookie`)
-], Docker.prototype, "authGet", null);
-__decorate([
-    kwyjibo_1.Get("/oauth"),
-    K.ActionMiddleware(app_1.default.authenticateMiddleware),
-    kwyjibo_1.DocAction(`oAuth callback`)
-], Docker.prototype, "oauth", null);
-__decorate([
-    kwyjibo_1.Post("/auth")
-], Docker.prototype, "authPost", null);
-__decorate([
-    K.ActionMiddleware(app_1.default.authorizeMiddleware),
+    K.ActionMiddleware(app_1.default.authorize),
     kwyjibo_1.DocAction(`Lists existing containers`)
 ], Docker.prototype, "containers", null);
 __decorate([
     kwyjibo_1.DocAction(`Starts a container`),
-    K.ActionMiddleware(app_1.default.authorizeMiddleware)
+    K.ActionMiddleware(app_1.default.authorize)
 ], Docker.prototype, "start", null);
 __decorate([
     kwyjibo_1.DocAction(`Lists the content of a directory from a container`),
-    K.ActionMiddleware(app_1.default.authorizeMiddleware)
+    K.ActionMiddleware(app_1.default.authorize)
 ], Docker.prototype, "ls", null);
 __decorate([
     kwyjibo_1.DocAction(`Gets the content of a file from a container`),
-    K.ActionMiddleware(app_1.default.authorizeMiddleware)
+    K.ActionMiddleware(app_1.default.authorize)
 ], Docker.prototype, "getArchive", null);
 __decorate([
     kwyjibo_1.DocAction(`Shows the logs for the container with the id sent in the querystring`),
-    K.ActionMiddleware(app_1.default.authorizeMiddleware)
+    K.ActionMiddleware(app_1.default.authorize)
 ], Docker.prototype, "logs", null);
-Docker = __decorate([
+Docker = Docker_1 = __decorate([
     kwyjibo_1.Controller("/docker"),
     kwyjibo_1.DocController("Docker operations controller.")
 ], Docker);

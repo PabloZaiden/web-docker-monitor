@@ -14,7 +14,7 @@ let OAuth = class OAuth {
 };
 __decorate([
     kwyjibo_1.Get("/callback"),
-    kwyjibo_1.ActionMiddleware(app_1.default.authenticateMiddleware),
+    kwyjibo_1.ActionMiddleware(app_1.default.authenticate),
     kwyjibo_1.DocAction(`oAuth callback`)
 ], OAuth.prototype, "oauth", null);
 OAuth = __decorate([

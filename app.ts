@@ -18,11 +18,11 @@ export default class App {
     private static isDevelopment = false;
     private static securityProvider: SecurityProvider;
    
-    public static get authorizeMiddleware(): Express.Handler {
+    public static get authorize(): Express.Handler {
         return App.securityProvider.getAuthorizeMiddleware();
     }
 
-    public static get authenticateMiddleware(): Express.Handler {
+    public static get authenticate(): Express.Handler {
         return App.securityProvider.getAuthenticateMiddleware()
     }
 
@@ -58,9 +58,9 @@ export default class App {
             done(null, user);
         });
 
-        App.express.set('view engine', 'ejs');
+        App.express.set("view engine", "ejs");
 
-        App.loadSecurityProvider(new SlackSecurityProvider());
+        App.securityProvider = new SlackSecurityProvider("/oauth/callback");
     }
 
 

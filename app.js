@@ -8,10 +8,10 @@ const Session = require("express-session");
 const slackSecurityProvider_1 = require("./middleware/slackSecurityProvider");
 const kwyjibo_1 = require("kwyjibo");
 class App {
-    static get authorizeMiddleware() {
+    static get authorize() {
         return App.securityProvider.getAuthorizeMiddleware();
     }
-    static get authenticateMiddleware() {
+    static get authenticate() {
         return App.securityProvider.getAuthenticateMiddleware();
     }
     static init() {
@@ -39,8 +39,8 @@ class App {
         Passport.deserializeUser(function (user, done) {
             done(null, user);
         });
-        App.express.set('view engine', 'ejs');
-        App.loadSecurityProvider(new slackSecurityProvider_1.default());
+        App.express.set("view engine", "ejs");
+        App.securityProvider = new slackSecurityProvider_1.default("/oauth/callback");
     }
     static loadSecurityProvider(securityProvider) {
         App.securityProvider = securityProvider;
