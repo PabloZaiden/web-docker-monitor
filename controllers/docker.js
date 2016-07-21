@@ -12,8 +12,7 @@ const Parser = require("ansi-style-parser");
 const app_1 = require("../app");
 const Stream = require("stream");
 const OS = require("os");
-let Docker_1;
-let Docker = Docker_1 = class Docker {
+let Docker_1 = class Docker {
     constructor() {
         this.dockerAPI = undefined;
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });
@@ -174,6 +173,7 @@ let Docker = Docker_1 = class Docker {
         this.dockerAPI.modem.demuxStream(stream, finalStream, finalStream);
     }
 };
+let Docker = Docker_1;
 __decorate([
     kwyjibo_1.Get("/"),
     kwyjibo_1.DocAction("Redirects to the containers action")
