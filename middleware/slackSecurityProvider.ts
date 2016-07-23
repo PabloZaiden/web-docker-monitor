@@ -1,4 +1,4 @@
-import {SecurityProvider} from "./securityProvider";
+import { SecurityProvider } from "./securityProvider";
 import * as Express from "express";
 import * as Passport from "passport";
 let Slack = require("passport-slack");
@@ -38,7 +38,11 @@ export default class SlackSecurityProvider implements SecurityProvider {
         },
             function (accessToken, refreshToken, profile, done) {
                 if (profile._json.url === slackTeamUrl) {
-                    done(null, profile);
+                    done(null, {
+                        username: profile._json.user,
+                        user_id: profile._json.user_id,
+                        team_id: profile._json.team_id
+                    });
                 } else {
                     done(new Error("Invalid team"));
                 }
