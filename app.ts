@@ -5,7 +5,7 @@ import * as DebugModule from "debug";
 import * as Http from "http";
 import * as EJS from "ejs";
 import * as Passport from "passport";
-import * as Session from "express-session";
+import Session = require("cookie-session");
 import SlackSecurityProvider from "./middleware/slackSecurityProvider";
 import {SecurityProvider} from "./middleware/securityProvider";
 import {addControllersToExpressApp} from "kwyjibo";
@@ -43,9 +43,8 @@ export default class App {
         }
         
         App.express.use(Session({
-            secret: sessionSecret,
-            resave: false,
-            saveUninitialized: true
+            name: "session",
+            secret: sessionSecret
         }));
         App.express.use(Passport.initialize());
         App.express.use(Passport.session());
