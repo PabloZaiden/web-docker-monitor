@@ -237,7 +237,7 @@ class Docker {
 
             let data: String;
             try {
-                let data = await this.readStream(stream);
+                data = await this.readStream(stream);
             } catch (err) {
                 this.handleError(context, err);
             }
