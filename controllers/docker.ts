@@ -1,8 +1,13 @@
-import {Controller, DocController, DocAction, Get, Post, Context} from "kwyjibo";
+import { Controller, DocController, DocAction, Get, Post, Context } from "kwyjibo";
 import * as K from "kwyjibo";
 import App from "../app";
 import * as Stream from "stream";
 import * as OS from "os";
+import * as Tar from "tar";
+import * as FS from "fs";
+import * as FSExtra from "fs-extra";
+import * as Path from "path";
+import * as UUID from "node-uuid";
 
 let Dockerode = require("dockerode");
 let Parser = require("ansi-style-parser");
@@ -35,7 +40,7 @@ class Docker {
                 return;
             }
             context.response.render("containersList",
-                { 
+                {
                     model: containers,
                     paths: {
                         logs: K.getActionRoute(Docker, "logs"),
@@ -161,11 +166,50 @@ class Docker {
                 return;
             }
 
-            let fileName = path.split("/").join("__");
+            if (path.endsWith("/")) { // directory
 
-            context.response.setHeader("Content-Type", "application/octet-stream");
-            context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}.tar"`);
-            stream.pipe(context.response);
+                let dirName = path.split("/").join("__");
+                context.response.setHeader("Content-Type", "application/octet-stream");
+                context.response.setHeader("Content-Disposition", `attachment; filename="${dirName}.tar"`);
+                stream.pipe(context.response);
+            } else { // file
+                let parts = path.split("/");
+
+                let fileName = parts[parts.length - 1];
+
+                let tempFilePath = OS.tmpdir();
+                let random = UUID.v4();
+                let extractDir = Path.join(tempFilePath, random);
+                FS.mkdirSync(extractDir);
+
+                let extractStream = Tar.Extract(extractDir)
+                    .on("error", err => {
+                        this.handleError(context, err);
+                    })
+                    .on("end", () => {
+                        let extractedFilePath = Path.join(extractDir, fileName);
+                        let readStream = FS.createReadStream(extractedFilePath);
+
+                        readStream.on("error", err => {
+                            this.handleError(context, err);
+                        });
+
+                        readStream.on("end", () => {
+                            FSExtra.remove(extractDir, err => {
+                                if (err) {
+                                    console.log(`Couldn't delete ${extractedFilePath}. ${err}`);
+                                }
+                            });
+                        });
+
+                        context.response.setHeader("Content-Type", "application/octet-stream");
+                        context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+                        readStream.pipe(context.response);
+                    });
+
+                stream.pipe(extractStream);
+            }
+
         });
     }
 

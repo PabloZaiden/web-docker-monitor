@@ -15,7 +15,12 @@
                 "--nolazy"
             ],
             "env": {
-                "NODE_ENV": "development"
+                "NODE_ENV": "development",
+                "SESSION_SECRET": "mySecret",
+                "SLACK_CALLBACK_URL": "http://localhost:3000",
+                "SLACK_CLIENT_ID": "1234",
+                "SLACK_CLIENT_SECRET": "super-secret",
+                "SLACK_TEAM_URL": "https://my-team.slack.com/"
             },
             "externalConsole": false,
             "sourceMaps": true,
