@@ -1,7 +1,7 @@
 import {SecurityProvider} from "./securityProvider";
 import * as Express from "express";
 import * as Passport from "passport";
-import * as Slack from "passport-slack";
+let Slack = require("passport-slack");
 
 export default class SlackSecurityProvider implements SecurityProvider {
 

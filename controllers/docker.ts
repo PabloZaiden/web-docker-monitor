@@ -1,15 +1,16 @@
 import {Controller, DocController, DocAction, Get, Post, Context} from "kwyjibo";
 import * as K from "kwyjibo";
-import * as Dockerode from "dockerode";
-import * as Parser from "ansi-style-parser";
 import App from "../app";
 import * as Stream from "stream";
 import * as OS from "os";
 
+let Dockerode = require("dockerode");
+let Parser = require("ansi-style-parser");
+
 @Controller("/docker")
 @DocController("Docker operations controller.")
 class Docker {
-    private dockerAPI: Dockerode = undefined;
+    private dockerAPI = undefined;
 
     constructor() {
         this.dockerAPI = new Dockerode({ socketPath: "/var/run/docker.sock" });

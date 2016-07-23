@@ -48,7 +48,7 @@ export default class App {
         }
 
         let isHttps = callbackUrl.toLowerCase().startsWith("https");
-        
+
         App.express.use(Session({
             secureProxy: isHttps, 
             name: "session",
