@@ -4,7 +4,7 @@ const CookieParser = require("cookie-parser");
 const BodyParser = require("body-parser");
 const Http = require("http");
 const Passport = require("passport");
-const Session = require("express-session");
+const Session = require("cookie-session");
 const slackSecurityProvider_1 = require("./middleware/slackSecurityProvider");
 const kwyjibo_1 = require("kwyjibo");
 class App {
@@ -27,9 +27,8 @@ class App {
             throw new Error("Missing SESSION_SECRET");
         }
         App.express.use(Session({
-            secret: sessionSecret,
-            resave: false,
-            saveUninitialized: true
+            name: "session",
+            secret: sessionSecret
         }));
         App.express.use(Passport.initialize());
         App.express.use(Passport.session());
