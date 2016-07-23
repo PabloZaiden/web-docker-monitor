@@ -1,8 +1,6 @@
-FROM node:6-slim
-WORKDIR /app
-COPY . /app
-RUN npm install
+FROM pablozaiden/typescript:onbuild
 
 ENV NODE_ENV=development
+
 EXPOSE 3000
 ENTRYPOINT node app.js

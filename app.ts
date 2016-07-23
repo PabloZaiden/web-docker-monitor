@@ -47,10 +47,13 @@ export default class App {
             callbackUrl = "";
         }
 
+        let isHttps = callbackUrl.toLowerCase().startsWith("https");
+        
         App.express.use(Session({
-            secure: false, // TODO: make this work: callbackUrl.toLowerCase().startsWith("https") ? true : false, 
+            secureProxy: isHttps, 
             name: "session",
-            secret: sessionSecret
+            secret: sessionSecret,
+            httpOnly: true
         }));
         App.express.use(Passport.initialize());
         App.express.use(Passport.session());
