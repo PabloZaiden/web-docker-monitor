@@ -8,7 +8,7 @@ import * as Passport from "passport";
 import Session = require("cookie-session");
 import SlackSecurityProvider from "./middleware/slackSecurityProvider";
 import {SecurityProvider} from "./middleware/securityProvider";
-import {addControllersToExpressApp} from "kwyjibo";
+import * as K from "kwyjibo";
 
 export default class App {
 
@@ -72,7 +72,7 @@ export default class App {
         App.server = Http.createServer(App.express);
 
         // Init all Kwyjibo controllers
-        addControllersToExpressApp(App.express);
+        K.initialize(App.express);
 
         // Use custom errors
         App.express.use(App.OnRequestError);
@@ -160,14 +160,4 @@ export default class App {
 }
 
 App.init();
-
-// HACK: this must be done. Otherwise kwyjibo wont find the controllers
-/* tslint:disable */
-let controllers = require("require-all")({
-    dirname: __dirname + "/controllers",
-    excludeDirs: /^\.(git|svn)$/,
-    recursive: true
-});
-/* tslint:enable */
-
 App.start();

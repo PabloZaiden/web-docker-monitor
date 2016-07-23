@@ -6,7 +6,7 @@ const Http = require("http");
 const Passport = require("passport");
 const Session = require("cookie-session");
 const slackSecurityProvider_1 = require("./middleware/slackSecurityProvider");
-const kwyjibo_1 = require("kwyjibo");
+const K = require("kwyjibo");
 class App {
     static get authorize() {
         return App.securityProvider.getAuthorizeMiddleware();
@@ -48,7 +48,7 @@ class App {
         // Create HTTP server.
         App.server = Http.createServer(App.express);
         // Init all Kwyjibo controllers
-        kwyjibo_1.addControllersToExpressApp(App.express);
+        K.initialize(App.express);
         // Use custom errors
         App.express.use(App.OnRequestError);
         App.express.use(App.OnRequestNotFound);
@@ -128,13 +128,5 @@ App.isDevelopment = false;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = App;
 App.init();
-// HACK: this must be done. Otherwise kwyjibo wont find the controllers
-/* tslint:disable */
-let controllers = require("require-all")({
-    dirname: __dirname + "/controllers",
-    excludeDirs: /^\.(git|svn)$/,
-    recursive: true
-});
-/* tslint:enable */
 App.start();
 //# sourceMappingURL=app.js.map
