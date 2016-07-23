@@ -26,7 +26,12 @@ class App {
         if (!sessionSecret) {
             throw new Error("Missing SESSION_SECRET");
         }
+        let callbackUrl = process.env.SLACK_CALLBACK_URL;
+        if (callbackUrl == undefined) {
+            callbackUrl = "";
+        }
         App.express.use(Session({
+            secure: callbackUrl.toLowerCase().startsWith("https") ? true : false,
             name: "session",
             secret: sessionSecret
         }));
