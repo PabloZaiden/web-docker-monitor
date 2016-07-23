@@ -31,7 +31,7 @@ class App {
             callbackUrl = "";
         }
         App.express.use(Session({
-            secure: callbackUrl.toLowerCase().startsWith("https") ? true : false,
+            secure: false,
             name: "session",
             secret: sessionSecret
         }));
