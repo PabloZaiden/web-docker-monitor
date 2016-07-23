@@ -8,6 +8,7 @@ import * as FS from "fs";
 import * as FSExtra from "fs-extra";
 import * as Path from "path";
 import * as UUID from "node-uuid";
+import * as Events from "events";
 
 let Dockerode = require("dockerode");
 let Parser = require("ansi-style-parser");
@@ -96,53 +97,57 @@ class Docker {
                 return;
             }
 
-            exec.start((err, stream) => {
+            exec.start(async (err, stream) => {
                 if (err) {
                     this.handleError(context, err);
                     return;
                 }
 
-                this.readStream(stream, content => {
-                    let model = {
-                        path: path,
-                        id: id,
-                        entries: [],
-                        downloadDirPath: `${K.getActionRoute(Docker, "getArchive")}?id=${id}&path=${path}`
-                    };
+                let content: String;
+                try {
+                    content = await this.readStream(stream);
+                } catch (err) {
+                    this.handleError(context, err);
+                }
 
-                    let lines = content.split(OS.EOL);
+                let model = {
+                    path: path,
+                    id: id,
+                    entries: [],
+                    downloadDirPath: `${K.getActionRoute(Docker, "getArchive")}?id=${id}&path=${path}`
+                };
 
-                    for (let line of lines) {
-                        if (!line.startsWith("total")) {
-                            let lastSpace = line.lastIndexOf(" ");
-                            let info = line.substring(0, lastSpace);
-                            let entryName = line.substring(lastSpace + 1);
-                            let action = "";
-                            let newPath = path + entryName;
+                let lines = content.split(OS.EOL);
 
-                            if (entryName.endsWith("/")) {
-                                action = K.getActionRoute(Docker, "ls");
-                            } else {
-                                action = K.getActionRoute(Docker, "getArchive");
-                            }
+                for (let line of lines) {
+                    if (!line.startsWith("total")) {
+                        let lastSpace = line.lastIndexOf(" ");
+                        let info = line.substring(0, lastSpace);
+                        let entryName = line.substring(lastSpace + 1);
+                        let action = "";
+                        let newPath = path + entryName;
 
-                            let link = `${action}?id=${id}&path=${path + entryName}`;
-
-                            let entry = {
-                                info: info,
-                                name: entryName,
-                                link: link
-                            };
-
-                            model.entries.push(entry);
+                        if (entryName.endsWith("/")) {
+                            action = K.getActionRoute(Docker, "ls");
+                        } else {
+                            action = K.getActionRoute(Docker, "getArchive");
                         }
-                    }
 
-                    context.response.render("fsList", model);
-                });
+                        let link = `${action}?id=${id}&path=${path + entryName}`;
+
+                        let entry = {
+                            info: info,
+                            name: entryName,
+                            link: link
+                        };
+
+                        model.entries.push(entry);
+                    }
+                }
+
+                context.response.render("fsList", model);
             });
         });
-
     }
 
     @DocAction(`Gets the content of a file from a container`)
@@ -160,7 +165,7 @@ class Docker {
 
         container.getArchive({
             path: path
-        }, (err, stream) => {
+        }, async (err, stream) => {
             if (err) {
                 this.handleError(context, err);
                 return;
@@ -180,36 +185,30 @@ class Docker {
                 let tempFilePath = OS.tmpdir();
                 let random = UUID.v4();
                 let extractDir = Path.join(tempFilePath, random);
-                FS.mkdirSync(extractDir);
+                try {
 
-                let extractStream = Tar.Extract(extractDir)
-                    .on("error", err => {
-                        this.handleError(context, err);
-                    })
-                    .on("end", () => {
-                        let extractedFilePath = Path.join(extractDir, fileName);
-                        let readStream = FS.createReadStream(extractedFilePath);
+                    FS.mkdirSync(extractDir);
+                    let extractedFilePath = Path.join(extractDir, fileName);
+                    let extractStream = Tar.Extract(extractDir);
 
-                        readStream.on("error", err => {
-                            this.handleError(context, err);
-                        });
+                    stream.pipe(extractStream);
 
-                        readStream.on("end", () => {
-                            FSExtra.remove(extractDir, err => {
-                                if (err) {
-                                    console.log(`Couldn't delete ${extractedFilePath}. ${err}`);
-                                }
-                            });
-                        });
+                    let extractStreamPromise = await this.emitterToPromise(extractStream);
 
-                        context.response.setHeader("Content-Type", "application/octet-stream");
-                        context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-                        readStream.pipe(context.response);
-                    });
+                    let readStream = FS.createReadStream(extractedFilePath);
 
-                stream.pipe(extractStream);
+                    context.response.setHeader("Content-Type", "application/octet-stream");
+                    context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+                    readStream.pipe(context.response);
+
+                    let readStreamPromise = await this.emitterToPromise(readStream);
+                    FSExtra.removeSync(extractDir);
+
+                } catch (err) {
+                    this.handleError(context, err);
+                }
             }
-
         });
     }
 
@@ -230,36 +229,64 @@ class Docker {
             stdout: true,
             stderr: true,
             tty: false
-        }, (err, stream) => {
+        }, async (err, stream) => {
             if (err) {
                 this.handleError(context, err);
                 return;
             }
-            this.readStream(stream, data => {
-                let parts = Parser(data);
 
-                let html = "";
-                for (let p of parts) {
-                    html += p.text;
-                }
-                context.response.send("<html><body><pre>" + html + "</pre></body></html>");
-            });
+            let data: String;
+            try {
+                let data = await this.readStream(stream);
+            } catch (err) {
+                this.handleError(context, err);
+            }
+
+            let parts = Parser(data);
+
+            let html = "";
+            for (let p of parts) {
+                html += p.text;
+            }
+            context.response.send("<html><body><pre>" + html + "</pre></body></html>");
         });
     }
 
-    private readStream(stream: any, callback: (content: string) => void) {
-        var data = "";
+    private readStream(stream: any): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            var data = "";
 
-        var finalStream = new Stream.PassThrough();
-        finalStream.on("data", chunk => {
-            data += chunk;
+            var finalStream = new Stream.PassThrough();
+            finalStream.on("data", chunk => {
+                data += chunk;
+            });
+
+            stream.on("end", () => {
+                stream.destroy();
+                resolve(data);
+            });
+
+            stream.on("error", err => {
+                reject(err);
+            })
+
+            this.dockerAPI.modem.demuxStream(stream, finalStream, finalStream);
         });
+    }
 
-        stream.on("end", () => {
-            stream.destroy();
-            callback(data);
+    private emitterToPromise<T extends Events.EventEmitter>(emitter: T, resolveEvent?: string): Promise<T> {
+        if (resolveEvent == undefined) {
+            resolveEvent = "end";
+        }
+
+        return new Promise<T>((resolve, reject) => {
+            emitter.on(resolveEvent, () => {
+                resolve(emitter);
+            });
+
+            emitter.on("error", err => {
+                reject(err);
+            });
         });
-
-        this.dockerAPI.modem.demuxStream(stream, finalStream, finalStream);
     }
 }

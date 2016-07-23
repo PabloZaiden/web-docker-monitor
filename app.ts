@@ -19,7 +19,11 @@ export default class App {
     private static securityProvider: SecurityProvider;
    
     public static get authorize(): Express.Handler {
-        return App.securityProvider.getAuthorizeMiddleware();
+        if (process.env.DISABLE_AUTH) {
+            return (req, res, next) => next();
+        } else {
+            return App.securityProvider.getAuthorizeMiddleware();
+        }
     }
 
     public static get authenticate(): Express.Handler {

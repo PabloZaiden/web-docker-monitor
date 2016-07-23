@@ -20,7 +20,8 @@
                 "SLACK_CALLBACK_URL": "http://localhost:3000",
                 "SLACK_CLIENT_ID": "1234",
                 "SLACK_CLIENT_SECRET": "super-secret",
-                "SLACK_TEAM_URL": "https://my-team.slack.com/"
+                "SLACK_TEAM_URL": "https://my-team.slack.com/",
+                "DISABLE_AUTH": "true"
             },
             "externalConsole": false,
             "sourceMaps": true,
