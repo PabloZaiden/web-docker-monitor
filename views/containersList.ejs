@@ -12,6 +12,7 @@
                         <%if (container.State !== "running") { %>
                             <a href="<%=paths.start%>?id=<%=container.Id%>">Start</a>
                         <%} else {%>
+                            <a href="<%=paths.stop%>?id=<%container.Id%>">Stop</a>
                             <a href="<%=paths.ls%>?id=<%=container.Id%>&path=/">Browse filesystem</a>
                         <%}%>
                     </li>

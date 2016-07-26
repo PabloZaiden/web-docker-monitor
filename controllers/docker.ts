@@ -46,6 +46,7 @@ class Docker {
                     paths: {
                         logs: K.getActionRoute(Docker, "logs"),
                         start: K.getActionRoute(Docker, "start"),
+                        stop: K.getActionRoute(Docker, "stop"),
                         ls: K.getActionRoute(Docker, "ls")
                     }
                 });
@@ -64,6 +65,27 @@ class Docker {
         let container = this.dockerAPI.getContainer(id);
 
         container.start((err, stream) => {
+            if (err) {
+                this.handleError(context, err);
+                return;
+            }
+
+            context.response.redirect(K.getActionRoute(Docker, "containers"));
+        });
+    }
+
+    @DocAction(`Stops a container`)
+    @K.ActionMiddleware(App.authorize)
+    stop(context: Context): void {
+        let id = context.request.query.id;
+        if (id == undefined) {
+            context.response.status(404).send("invalid id");
+            return;
+        }
+
+        let container = this.dockerAPI.getContainer(id);
+
+        container.stop((err, stream) => {
             if (err) {
                 this.handleError(context, err);
                 return;
