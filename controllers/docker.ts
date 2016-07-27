@@ -40,6 +40,7 @@ class Docker {
                 this.handleError(context, err);
                 return;
             }
+
             context.response.render("containersList",
                 {
                     model: containers,
@@ -55,11 +56,9 @@ class Docker {
 
     @DocAction(`Starts a container`)
     @K.ActionMiddleware(App.authorize)
-    start(context: Context): void {
-        let id = context.request.query.id;
+    start(context: Context, @K.FromQuery("id") id: String): void {
         if (id == undefined) {
-            context.response.status(404).send("invalid id");
-            return;
+            throw new K.NotFound("invalid id");
         }
 
         let container = this.dockerAPI.getContainer(id);
@@ -76,11 +75,9 @@ class Docker {
 
     @DocAction(`Stops a container`)
     @K.ActionMiddleware(App.authorize)
-    stop(context: Context): void {
-        let id = context.request.query.id;
+    stop(context: Context, @K.FromQuery("id") id: String): void {
         if (id == undefined) {
-            context.response.status(404).send("invalid id");
-            return;
+            throw new K.NotFound("invalid id");
         }
 
         let container = this.dockerAPI.getContainer(id);
@@ -97,13 +94,9 @@ class Docker {
 
     @DocAction(`Lists the content of a directory from a container`)
     @K.ActionMiddleware(App.authorize)
-    ls(context: Context) {
-        let id = context.request.query.id;
-        let path = context.request.query.path;
-
+    ls(context: Context, @K.FromQuery("id") id: String, @K.FromQuery("path") path: String) {
         if (id == undefined || path == undefined) {
-            context.response.status(404).send("invalid id or path");
-            return;
+            throw new K.NotFound("invalid path or id");
         }
 
         let container = this.dockerAPI.getContainer(id);
@@ -130,6 +123,7 @@ class Docker {
                     content = await this.readStream(stream);
                 } catch (err) {
                     this.handleError(context, err);
+                    return;
                 }
 
                 let model = {
@@ -147,7 +141,19 @@ class Docker {
                         let info = line.substring(0, lastSpace);
                         let entryName = line.substring(lastSpace + 1);
                         let action = "";
-                        let newPath = path + entryName;
+
+                        let newPath = path;
+                        if (entryName === "../"){
+                            let withoutLastSlash = newPath.substr(0, newPath.length - 1);
+                            let lastSlash = withoutLastSlash.lastIndexOf("/");
+                            newPath = newPath.substr(0, lastSlash + 1);
+                        } else if (entryName !== "./") {
+                            newPath += entryName;
+                        }
+
+                        if (newPath === "") {
+                            newPath = "/";
+                        }
 
                         if (entryName.endsWith("/")) {
                             action = K.getActionRoute(Docker, "ls");
@@ -155,7 +161,7 @@ class Docker {
                             action = K.getActionRoute(Docker, "getArchive");
                         }
 
-                        let link = `${action}?id=${id}&path=${path + entryName}`;
+                        let link = `${action}?id=${id}&path=${newPath}`;
 
                         let entry = {
                             info: info,
@@ -174,13 +180,9 @@ class Docker {
 
     @DocAction(`Gets the content of a file from a container`)
     @K.ActionMiddleware(App.authorize)
-    getArchive(context: Context) {
-        let id: string = context.request.query.id;
-        let path: string = context.request.query.path;
-
+    getArchive(context: Context, @K.FromQuery("id") id: String, @K.FromQuery("path") path: String) {
         if (id == undefined || path == undefined) {
-            context.response.status(404).send("invalid id or path");
-            return;
+            throw new K.NotFound("invalid path or id");
         }
 
         let container = this.dockerAPI.getContainer(id);
@@ -229,6 +231,7 @@ class Docker {
 
                 } catch (err) {
                     this.handleError(context, err);
+                    return;
                 }
             }
         });
@@ -236,12 +239,9 @@ class Docker {
 
     @DocAction(`Shows the logs for the container with the id sent in the querystring`)
     @K.ActionMiddleware(App.authorize)
-    logs(context: Context): void {
-
-        let id = context.request.query.id;
+    logs(context: Context, @K.FromQuery("id") id: String): void {
         if (id == undefined) {
-            context.response.status(404).send("invalid id");
-            return;
+            throw new K.NotFound("invalid id");
         }
 
         let container = this.dockerAPI.getContainer(id);
@@ -262,6 +262,7 @@ class Docker {
                 data = await this.readStream(stream);
             } catch (err) {
                 this.handleError(context, err);
+                return;
             }
 
             let parts = Parser(data);

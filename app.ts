@@ -87,10 +87,6 @@ export default class App {
         // Init all Kwyjibo controllers
         K.initialize(App.express);
 
-        // Use custom errors
-        App.express.use(App.OnRequestError);
-        App.express.use(App.OnRequestNotFound);
-
         // Listen on provided port, on all network interfaces.
         App.express.set("port", App.port);
         App.server.listen(App.port);
@@ -98,29 +94,7 @@ export default class App {
         App.server.on("listening", App.onListening);
     }
 
-    private static OnRequestError(err: any, req: Express.Request, res: Express.Response, next: Function): void {
-        if (err.name === "UnauthorizedError") {
-            res.sendStatus(401);
-        } else {
-            if (App.isDevelopment) {
-                res.statusCode = 500;
-                if (err instanceof Error) {
-                    console.error({ name: err.name, message: err.message, stack: err.stack });
-                    res.json({ name: err.name, message: err.message });
-                } else {
-                    console.error(err);
-                    res.json(err);
-                }
-            } else {
-                res.sendStatus(500);
-            }
-        }
-    }
-
-    private static OnRequestNotFound(req: Express.Request, res: Express.Response, next: Function): void {
-        res.sendStatus(404);
-    }
-
+   
     private static normalizePort(val): any {
         let port = parseInt(val, 10);
 
