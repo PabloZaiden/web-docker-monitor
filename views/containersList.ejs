@@ -1,23 +1,56 @@
 <html>
-    <body style="font-family: monospace">
-        <p>
-            Containers
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+        $("#filter").keyup(function() {
+          var words = $("#filter").val().split(" ");
+          var containers = $("#container-list div.container");
+          for (var container of containers) {
+            var jqContainer = $(container);
+            var containerName = jqContainer.find("span.container-name");
+            var containerImage = jqContainer.find("span.container-image");
 
-            <ul>
-                <%for (let container of model) { %>
-                    <li>
-                        <%=container.Names[0]%> (<%=container.Image %>) 
-                        (<%=container.Status%>)
-                        <a href="<%=paths.logs%>?id=<%=container.Id%>">View logs</a>
-                        <%if (container.State !== "running") { %>
-                            <a href="<%=paths.start%>?id=<%=container.Id%>">Start</a>
-                        <%} else {%>
-                            <a href="<%=paths.stop%>?id=<%=container.Id%>">Stop</a>
-                            <a href="<%=paths.ls%>?id=<%=container.Id%>&path=/">Browse filesystem</a>
-                        <%}%>
-                    </li>
+            var name = containerName.text().toLowerCase();
+            var image = containerImage.text().toLowerCase();
+
+            var wordCount = 0;
+            for (var word of words) {
+              if (name.indexOf(word.toLowerCase()) >= 0 || image.indexOf(word.toLowerCase()) >= 0) {
+                wordCount++;
+              }
+            }
+
+            if (wordCount == words.length) {
+              $(container).show();
+            } else {
+              $(container).hide();
+            }
+          };
+        });
+      });
+  </script>
+</head>
+
+<body style="font-family: Verdana">
+    <h1>Containers</h1>
+    <div class="filter">Filter <input type="text" id="filter" /></div>
+    <div id="container-list">
+        <%for (let container of model) { %>
+            <div class="container">
+                <span class="container-name"><%=container.Names[0]%></span>
+                <span class="container-image"><%=container.Image %></span>
+                <span class="container-status <%=container.Status%>"><%=container.Status%></span>
+                <a class="action view-logs" href="<%=paths.logs%>?id=<%=container.Id%>">View logs</a>
+                <%if (container.State !== "running") { %>
+                    <a class="action start" href="<%=paths.start%>?id=<%=container.Id%>">Start</a>
+                <%} else {%>
+                    <a class="action stop" href="<%=paths.stop%>?id=<%=container.Id%>">Stop</a>
+                    <a class="action browse" href="<%=paths.ls%>?id=<%=container.Id%>&path=/">Browse filesystem</a>
                 <%}%>
-            </ul>
-        </p>
-    </body>
+            </div>
+        <%}%>
+    </div>
+</body>
+
 </html>
