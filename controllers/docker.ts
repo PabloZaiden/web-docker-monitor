@@ -112,7 +112,7 @@ class Docker {
             AttachStdout: true,
             AttachStderr: true,
             Tty: false,
-            Cmd: ["ls", "-lap", path]
+            Cmd: ["ls", "-lahp", path]
         }, (err, exec) => {
             if (err) {
                 this.handleError(context, err);
