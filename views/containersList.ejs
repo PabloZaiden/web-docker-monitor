@@ -30,24 +30,163 @@
         });
       });
   </script>
+  <style>
+    body{
+            font-family:'Segoe UI Semilight', 'Open Sans', Verdana, Arial, Helvetica, sans-serif;
+            background: #ededed;
+            margin: 0px;
+        }
+        .container-filter{
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .container-filter h1,
+        .container-filter .filter{
+            margin-left: 20px;
+        }
+        .container-filter h1{
+            font-weight: lighter;
+            margin-left: 10px;
+        }
+        #container-list .container{
+            display: inline-block;
+            width: 285px;
+            height: 170px;
+            text-align: left;
+            margin: 10px 10px 10px 10px;
+            padding: 12px;
+            color: #fff;
+        }
+        #container-list .container a{
+            color: #fff;
+            font-size: 13px;
+            display: block;
+            text-decoration: none;
+            margin-bottom: 5px;
+        }
+        #container-list .container:last-child{
+            text-align: left;
+        }
+        #container-list .container a:hover{
+            text-decoration: underline;
+        }
+        #container-list .container a i {
+           margin-right: 12px;
+        }
+        #container-list{
+            width:100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: block;
+            margin-top: 10px;
+        }
+        .container-name,
+        .container-image,
+        .container-status{
+            display: block;
+        }
+        .container.running{
+            background: #319c24;
+        }
+        .container{
+            background: #444;
+        }
+        .links{
+            margin-top: 25px;
+            display: inline-block;
+        }
+        .links-right{
+            margin-left: 35px;
+        }
+        .container{
+            vertical-align: top;
+        }
+        .container-name{
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .icon-stop{
+            font-size: 16px;
+        }
+        #container-list .container a span{
+            min-width: 15px;
+            min-height: 15px;
+            padding-right: 4px;
+            display: inline-block;
+        }
+        .filter{
+            display: inline-block;
+            width: 71.5%;
+            text-align: right;
+        }
+        .title{
+            max-width: 45%;
+            display: inline-block;
+        }
+        .fluid{
+            background: white;
+            border-bottom: 1px solid #d8d3d3;
+            padding-bottom: 10px;
+        }
+        .filter span{
+            margin-right: 10px;
+            font-weight: lighter;
+            font-size: 16px;
+        }
+        .filter input[type="text"]{
+            width: 235px;
+            outline: none;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+        .container{
+            border:2px solid transparent;
+        }
+        .container:hover{
+            border: 2px solid black;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
-<body style="font-family: Verdana">
-    <h1>Containers</h1>
-    <div class="filter">Filter <input type="text" id="filter" /></div>
+<body>
+    <div class="fluid">
+      <div class="container-filter">
+        <div class="title">
+            <h1>Containers</h1>
+        </div> 
+        <div class="filter">
+          <span>Filter</span> <input type="text" id="filter" />
+        </div>
+      </div>
+    </div>
     <div id="container-list">
         <%for (let container of model) { %>
-            <div class="container">
+            <div class="container <%=container.State.toLowerCase()%>">
                 <span class="container-name"><%=container.Names[0]%></span>
                 <span class="container-image"><%=container.Image %></span>
-                <span class="container-status <%=container.Status%>"><%=container.Status%></span>
-                <a class="action view-logs" href="<%=paths.logs%>?id=<%=container.Id%>">View logs</a>
-                <%if (container.State !== "running") { %>
-                    <a class="action start" href="<%=paths.start%>?id=<%=container.Id%>">Start</a>
-                <%} else {%>
-                    <a class="action stop" href="<%=paths.stop%>?id=<%=container.Id%>">Stop</a>
-                    <a class="action browse" href="<%=paths.ls%>?id=<%=container.Id%>&path=/">Browse filesystem</a>
-                <%}%>
+                <span class="container-status <%=container.State%>"><%=container.Status%></span>
+                <div class="links">
+                  <a class="action view-logs" href="<%=paths.logs%>?id=<%=container.Id%>"><span class="icon-view">✚</span>View logs</a>
+                  <%if (container.State !== "running") { %>
+                      <a class="action start" href="<%=paths.start%>?id=<%=container.Id%>"><span class="icon-play">►</span>Start</a>
+                  <%} else {%>
+                      <a class="action stop" href="<%=paths.stop%>?id=<%=container.Id%>"><span class="icon-stop">■</span>Stop</a>
+                      <a class="action browse" href="<%=paths.ls%>?id=<%=container.Id%>&path=/"><span class="icon icon-browser">&#128269; </span>Browse filesystem</a>
+                  <%}%>
+                </div>
             </div>
         <%}%>
     </div>

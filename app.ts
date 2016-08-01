@@ -57,7 +57,8 @@ export default class App {
             secureProxy: isHttps, 
             name: "session",
             secret: sessionSecret,
-            httpOnly: true
+            httpOnly: true,
+            expires: App.addDays(new Date(), 30)
         }));
         App.express.use(Passport.initialize());
         App.express.use(Passport.session());
@@ -132,6 +133,12 @@ export default class App {
             default:
                 throw error;
         }
+    }
+
+    private static addDays(date: Date, days: number): Date {
+        let result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
     }
 
     private static onListening(): void {
