@@ -57,8 +57,7 @@ export default class App {
             secureProxy: isHttps, 
             name: "session",
             secret: sessionSecret,
-            httpOnly: true,
-            expires: App.addDays(new Date(), 30)
+            httpOnly: true
         }));
         App.express.use(Passport.initialize());
         App.express.use(Passport.session());
