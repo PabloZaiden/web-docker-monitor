@@ -228,7 +228,7 @@ class Docker {
                         contentType = "text/plain";
                     }
 
-                    context.response.setHeader("Content-Type", );
+                    context.response.setHeader("Content-Type", contentType);
                     context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
                     readStream.pipe(context.response);
