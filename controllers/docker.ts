@@ -220,8 +220,15 @@ class Docker {
                     let extractStreamPromise = await this.emitterToPromise(extractStream);
 
                     let readStream = FS.createReadStream(extractedFilePath);
+                    
+                    let contentType = "application/octet-stream";
+                    
+                    // TODO: Use node-mime package to do this.
+                    if (fileName.endsWith(".txt") || fileName.endsWith(".logs")) {
+                        contentType = "text/plain";
+                    }
 
-                    context.response.setHeader("Content-Type", "application/octet-stream");
+                    context.response.setHeader("Content-Type", );
                     context.response.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
                     readStream.pipe(context.response);
