@@ -1,6 +1,6 @@
 {
   "name": "web-docker-monitor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "start": "node app.js"
@@ -28,7 +28,9 @@
     "kwyjibo": "^1.0.14",
     "node-uuid": "^1.4.7",
     "passport": "^0.3.2",
+    "passport-github": "^1.1.0",
     "passport-slack": "^0.0.6",
+    "request": "^2.79.0",
     "tar": "^2.2.1"
   }
 }

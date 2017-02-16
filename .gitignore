@@ -39,3 +39,7 @@ jspm_packages
 *.js
 
 *.js.map
+
+.env
+
+yarn.lock
