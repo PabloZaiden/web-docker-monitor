@@ -6,8 +6,7 @@ import * as Http from "http";
 import * as EJS from "ejs";
 import * as Passport from "passport";
 import Session = require("cookie-session");
-import GithubSecurityProvider from "./middleware/githubSecurityProvider";
-import {SecurityProvider} from "./middleware/securityProvider";
+import { SecurityProvider, GithubSecurityProvider } from 'github-securityprovider-connect';
 import * as K from "kwyjibo";
 
 export default class App {
