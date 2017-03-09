@@ -11,12 +11,12 @@ import * as K from "kwyjibo";
 
 export default class App {
 
-    private static port: number = App.normalizePort(process.env.port || "3000");
+    private static port: number = normalizePort(process.env.port || "3000");
     private static server: Http.Server;
     private static express: Express.Express;
     private static isDevelopment = false;
     private static securityProvider: SecurityProvider;
-   
+
     public static get authorize(): Express.Handler {
         if (process.env.DISABLE_AUTH) {
             return (req, res, next) => next();
@@ -44,7 +44,7 @@ export default class App {
         if (!sessionSecret) {
             throw new Error("Missing SESSION_SECRET");
         }
-        
+
         let callbackUrl: string = process.env.GITHUB_CALLBACK_URL;
         if (callbackUrl == undefined) {
             callbackUrl = "";
@@ -53,7 +53,7 @@ export default class App {
         let isHttps = callbackUrl.toLowerCase().startsWith("https");
 
         App.express.use(Session({
-            secureProxy: isHttps, 
+            secureProxy: isHttps,
             name: "session",
             secret: sessionSecret,
             httpOnly: true
@@ -91,23 +91,6 @@ export default class App {
         App.server.listen(App.port);
         App.server.on("error", App.onError);
         App.server.on("listening", App.onListening);
-    }
-
-   
-    private static normalizePort(val): any {
-        let port = parseInt(val, 10);
-
-        if (isNaN(port)) {
-            // named pipe
-            return val;
-        }
-
-        if (port >= 0) {
-            // port number
-            return port;
-        }
-
-        return false;
     }
 
     private static onError(error): void {
@@ -150,6 +133,23 @@ export default class App {
         }
     }
 }
+
+function normalizePort(val): any {
+    let port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
+
 
 App.init();
 App.start();
