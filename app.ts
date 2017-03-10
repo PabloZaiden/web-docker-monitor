@@ -71,7 +71,9 @@ export default class App {
 
         App.express.set("view engine", "ejs");
 
-        App.securityProvider = new GithubSecurityProvider("/oauth/callback", "read:org user:email");
+        App.securityProvider = new GithubSecurityProvider("/oauth/callback", {
+            scope: "read:org user:email"
+        });
     }
 
 

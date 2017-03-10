@@ -24,7 +24,7 @@
     "ejs": "^2.4.2",
     "express": "^4.13.1",
     "fs-extra": "^0.30.0",
-    "github-securityprovider-connect": "1.0.5",
+    "github-securityprovider-connect": "1.0.8",
     "kwyjibo": "^1.0.14",
     "node-uuid": "^1.4.7",
     "passport": "^0.3.2",
